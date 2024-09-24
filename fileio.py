@@ -44,7 +44,7 @@ def iglToVtkPolydata(sf, sv):
     return triangle_polydata
 
 
-def ngsolve_result_to_vtkpolydata(mesh, gfu):
+def ngsolve_result_to_vtkpolydata(mesh, gfu, f):
     eigenmodes = [0]*len(gfu.vecs)
 
     time_start = time.time()
@@ -63,9 +63,9 @@ def ngsolve_result_to_vtkpolydata(mesh, gfu):
     meshpoints = [mesh(v[0], v[1], v[2]) for v in vertices]
     print("meshpoints generated : ", time.time() - time_start)
 
-    for k in range(len(gfu.vecs)):
+    for k in range(len(f)):
         E = gfu.MDComponent(k)
-        name = "eigenmode" + str(k)
+        name = str(f[k]) + "Hz"
         time_start = time.time()
         eigenmodes[k] = [ E.real(x) for x in meshpoints ]
         print(name + " extract : ", time.time() - time_start)
@@ -74,9 +74,9 @@ def ngsolve_result_to_vtkpolydata(mesh, gfu):
     return polyData
 
 
-def save_ngsolve_result_as_vtk(filepath, mesh, u):
+def save_ngsolve_result_as_vtk(filepath, mesh, u, f):
 
-    polyData = ngsolve_result_to_vtkpolydata(mesh, u)
+    polyData = ngsolve_result_to_vtkpolydata(mesh, u, f)
 
     appendFilter = vtk.vtkAppendFilter()
     appendFilter.AddInputData(polyData)

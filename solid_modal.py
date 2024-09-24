@@ -15,4 +15,6 @@ mesh = load_volume_mesh(filepath)
 solid_fes = build_simple_solid_fes(mesh)
 u, f = solve_elasticity_system(steel, solid_fes)
 
-save_ngsolve_result_as_vtk("output.vtk", mesh, u)
+print(len(u.vecs), len(f))
+
+save_ngsolve_result_as_vtk("output.vtk", mesh, u, f)
