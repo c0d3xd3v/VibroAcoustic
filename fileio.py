@@ -1,3 +1,4 @@
+import os
 import vtk
 import ngsolve
 import time
@@ -6,9 +7,43 @@ import numpy as np
 from vtkmodules.util.numpy_support import numpy_to_vtk
 
 
+class Pathinformations():
+    pfad: str
+    dateiname_mit_endung: str
+    dateiname: str
+    endung: str
+    absoluter_pfad: str
+    verzeichnis: str
+
+    def __init__(self, filepath):
+        self.pfad = os.path.dirname(filepath)
+        self.dateiname_mit_endung = os.path.basename(filepath)
+        self.dateiname, self.endung = os.path.splitext(self.dateiname_mit_endung)
+        self.absoluter_pfad = os.path.abspath(filepath)
+        self.verzeichnis = os.path.dirname(self.absoluter_pfad)
+
+    def formated_info(self):
+        info = (
+            f"Pfad: {self.pfad}\n"
+            f"Dateiname: {self.dateiname}\n"
+            f"Endung: {self.endung}\n"
+            f"Verzeichnis: {self.verzeichnis}"
+        )
+        return info
+
+    def __str__(self):
+        return self.formated_info()
+
+
+def split_path_informations(filepath):
+    return Pathinformations(filepath)
+
+
 def load_volume_mesh(path):
     print(f'file path : {path}')
-    return ngsolve.Mesh(path)
+    ngs_mesh = ngsolve.Mesh(path)
+    
+    return ngs_mesh
 
 
 def addScalarCellData(triangle_polydata, cell_data, components, name):
@@ -38,34 +73,30 @@ def iglToVtkPolydata(sf, sv):
     cells2 = vtk.vtkCellArray()
     cells2.SetCells(triangles_array.GetNumberOfTuples(), triangles_array)
 
-    # Fügen Sie die Punkte und Zellen zur PolyData hinzu
     triangle_polydata.SetPoints(points)
     triangle_polydata.SetPolys(cells2)
     return triangle_polydata
 
 
-def ngsolve_result_to_vtkpolydata(mesh, gfu):
+def ngsolve_result_to_vtkpolydata(mesh, gfu, f):
     eigenmodes = [0]*len(gfu.vecs)
 
     time_start = time.time()
     vertices = [ [p[0], p[1], p[2]] for p in mesh.ngmesh.Points() ]
-    print("point copy : ", time.time() - time_start)
 
     time_start = time.time()
     triangles2 = [(t[0][0:3] - 1).tolist() for t in np.array(mesh.ngmesh.Elements2D())]
-    print("triangle copy : ", time.time() - time_start)
 
     time_start = time.time()
     polyData = iglToVtkPolydata(triangles2, vertices)
-    print("polydata copy : ", time.time() - time_start)
 
     time_start = time.time()
     meshpoints = [mesh(v[0], v[1], v[2]) for v in vertices]
-    print("meshpoints generated : ", time.time() - time_start)
 
     for k in range(len(gfu.vecs)):
         E = gfu.MDComponent(k)
-        name = "eigenmode" + str(k)
+        #name = "eigenmode" + str(k)
+        name = str(round(f[k].real, 2))+"Hz"
         time_start = time.time()
         eigenmodes[k] = [ E.real(x) for x in meshpoints ]
         print(name + " extract : ", time.time() - time_start)
@@ -74,9 +105,9 @@ def ngsolve_result_to_vtkpolydata(mesh, gfu):
     return polyData
 
 
-def save_ngsolve_result_as_vtk(filepath, mesh, u):
+def save_ngsolve_result_as_vtk(filepath, mesh, u, f):
 
-    polyData = ngsolve_result_to_vtkpolydata(mesh, u)
+    polyData = ngsolve_result_to_vtkpolydata(mesh, u, f)
 
     appendFilter = vtk.vtkAppendFilter()
     appendFilter.AddInputData(polyData)

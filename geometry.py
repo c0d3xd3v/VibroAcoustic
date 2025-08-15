@@ -1,13 +1,5 @@
 import sys
-
 from fileio import load_volume_mesh
-from fileio import save_ngsolve_result_as_vtk
-
-from material_definitons import steel, aluminium
-
-from eigenfrequencies import build_simple_solid_fes
-from eigenfrequencies import solve_elasticity_system
-
 import numpy as np
 
 filepath = sys.argv[1]
@@ -18,11 +10,11 @@ vertices = np.array(vertices)
 x = vertices[:, 0]
 y = vertices[:, 1]
 z = vertices[:, 2]
+
+x = x*0.001
+y = y*0.001
+z = z*0.001
+
 print("x", min(x), max(x))
 print("y", min(y), max(y))
 print("z", min(z), max(z))
-
-solid_fes = build_simple_solid_fes(mesh)
-u, f = solve_elasticity_system(aluminium, solid_fes)
-
-save_ngsolve_result_as_vtk("output.vtk", mesh, u, f)
