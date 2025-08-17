@@ -1,20 +1,22 @@
-import sys
-from fileio import load_volume_mesh
-import numpy as np
+from numpy import min
+from numpy import max
 
-filepath = sys.argv[1]
-mesh = load_volume_mesh(filepath)
+from ngsolve import Integrate
 
-vertices = [ [p[0], p[1], p[2]] for p in mesh.ngmesh.Points() ]
-vertices = np.array(vertices)
-x = vertices[:, 0]
-y = vertices[:, 1]
-z = vertices[:, 2]
 
-x = x*0.001
-y = y*0.001
-z = z*0.001
+def compute_characteristic_lenght(mesh):    
+    V = Integrate(1, mesh)
+    L = V**(1/3)
+    return L
 
-print("x", min(x), max(x))
-print("y", min(y), max(y))
-print("z", min(z), max(z))
+def compute_bounding_box_volume(mesh):
+    vertices = mesh.ngmesh.Points()
+
+    x_coords = [p[0] for p in vertices]
+    y_coords = [p[1] for p in vertices]
+    z_coords = [p[2] for p in vertices]
+
+    xmin, ymin, zmin = min(x_coords), min(y_coords), min(z_coords)
+    xmax, ymax, zmax = max(x_coords), max(y_coords), max(z_coords)
+
+    return (xmax - xmin)*(ymax - ymin)*(zmax - zmin)

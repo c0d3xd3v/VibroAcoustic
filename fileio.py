@@ -98,7 +98,21 @@ def ngsolve_result_to_vtkpolydata(mesh, gfu, f):
         #name = "eigenmode" + str(k)
         name = str(round(f[k].real, 2))+"Hz"
         time_start = time.time()
-        eigenmodes[k] = [ E.real(x) for x in meshpoints ]
+        #eigenmodes[k] = [ E.real(x) for x in meshpoints ]
+
+        # Nur Realanteil extrahieren
+        mode_values = np.array([E.real(x) for x in meshpoints])
+        
+        # Norm jedes Vektors berechnen
+        norms = np.linalg.norm(mode_values, axis=1)
+        max_norm = np.max(norms)
+        
+        # Normalisieren auf max = 1
+        if max_norm != 0:
+            mode_values /= max_norm
+        
+        eigenmodes[k] = mode_values
+
         print(name + " extract : ", time.time() - time_start)
         polyData = addScalarCellData(polyData, eigenmodes[k], 3, name)
 
