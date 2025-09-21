@@ -39,29 +39,16 @@ if __name__ == "__main__":
     # Trial- und Testfunktionen
     (u, *lambdas), (v, *mus) = X.TrialFunction(), X.TestFunction()
 
-    material = Material("linear", 6.9e7, 0.33, 2.5355e-6, units="mm")
+    material = Material("linear", 69e9, 0.33, 2700, units="SI")
     print(material)
-    '''
-    rho = 2.5355e-6   # kg/mm³
-    E   =  6.9e7     # N/mm²
 
-    unit_check(rho, E, "mm")
-
-    nu = 0.33       # dimensionslos
-    mu_val = E / (2 * (1 + nu))
-    lam = E * nu / ((1 + nu) * (1 - 2*nu))
-
-    print(f'rho : {rho}')
-    print(f'E   : {E}')
-    print(f'nu  : {nu}')
-    '''
     compute_bounding_box(mesh)
 
     # Tensors
     def eps(w): return 0.5*(grad(w)+grad(w).trans)
     def sigma(w): return material.lam*div(w)*Id(3) + 2*material.mu*eps(w)
 
-    rbm_gfs_ortho = rigid_body_modes(V, material.rho())
+    rbm_gfs_ortho = rigid_body_modes(V, material.rho("mm"))
 
     # Bilinearform
     a = BilinearForm(X, symmetric=True)
@@ -73,9 +60,9 @@ if __name__ == "__main__":
         a += SymbolicBFI(InnerProduct(rbm_coeffs[i], u) * mus[i])
 
     b = BilinearForm(X, symmetric=True)
-    b.components[0] += SymbolicBFI(material.rho()*InnerProduct(V.TrialFunction(), V.TestFunction()))
+    b.components[0] += SymbolicBFI(material.rho("mm")*InnerProduct(V.TrialFunction(), V.TestFunction()))
     for i in range(1, len(rbm_gfs_ortho)+1):
-        b.components[i] += SymbolicBFI(material.rho()*CoefficientFunction(0.0))
+        b.components[i] += SymbolicBFI(material.rho("mm")*CoefficientFunction(0.0))
 
     pre = ngsolve.Preconditioner(a, type="direct")  # oder "bddc, h1amg, direct", etc.
 
@@ -87,17 +74,17 @@ if __name__ == "__main__":
     print(f"Konditionszahl(pre x mat) : {compute_condition_number(a, pre):.2e}")
 
     # Lösung
-    lams, u = solve_scalar_eigen_problem_a(material.rho(), X, a.mat, b.mat, rbm_gfs_ortho, 12)
+    lams, u = solve_scalar_eigen_problem_a(material.rho("mm"), X, a.mat, b.mat, rbm_gfs_ortho, 12)
     f = np.sqrt(lams) / (2.0 * np.pi)
 
     for i, rbm in enumerate(rbm_gfs_ortho):
-        val = Integrate(material.rho() * InnerProduct(rbm, u.components[0]), mesh)
+        val = Integrate(material.rho("mm") * InnerProduct(rbm, u.components[0]), mesh)
         print(f"Lagrange-Kopplung {i}: {val}")
 
     u_vec = u.components[0].vec.Copy()
 
     for rbm in rbm_gfs_ortho:
-        coeff = Integrate(material.rho() * InnerProduct(u.components[0], rbm), mesh) / Integrate(material.rho() * InnerProduct(rbm, rbm), mesh)
+        coeff = Integrate(material.rho("mm") * InnerProduct(u.components[0], rbm), mesh) / Integrate(material.rho("mm") * InnerProduct(rbm, rbm), mesh)
         u_vec -= coeff * rbm.vec
         
     # Überschreibe mit projizierter Lösung
