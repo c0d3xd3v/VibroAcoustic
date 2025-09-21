@@ -48,12 +48,27 @@ class Material:
             return (self.E_SI / self.rho_SI) ** 0.5
         return 0.0
 
-# Beispiele
+    def formated_info(self):
+        info = (
+            f"E (Pa): {self.E("SI"):.3e}\n"
+            f"E (N/mm²): {self.E("mm"):.3e}\n"
+            f"rho (kg/m³): {self.rho("SI"):.3e}\n"
+            f"rho (kg/mm³): {self.rho("mm"):.3e}\n"
+            f"wave speed (m/s): {self.wave_speed():.3e}"
+        )
+        return info
+
+    def __str__(self):
+        return self.formated_info()
+
+
+# predefine
 aluminium = Material("linear", 69e3, 0.33, 2.5355e-6, units="mm")
 steel = Material("linear", 220e3, 0.28, 7.85e-6, units="mm")
 
-print("Aluminium E (Pa): {:.3e}".format(aluminium.E("SI")))
-print("Aluminium E (N/mm²): {:.3e}".format(aluminium.E("mm")))
-print("Aluminium rho (kg/m³): {:.3e}".format(aluminium.rho("SI")))
-print("Aluminium rho (kg/mm³): {:.3e}".format(aluminium.rho("mm")))
-print("Aluminium wave speed (m/s): {:.3e}".format(aluminium.wave_speed()))
+if __name__ == "__main__":
+    print("Aluminium E (Pa): {:.3e}".format(aluminium.E("SI")))
+    print("Aluminium E (N/mm²): {:.3e}".format(aluminium.E("mm")))
+    print("Aluminium rho (kg/m³): {:.3e}".format(aluminium.rho("SI")))
+    print("Aluminium rho (kg/mm³): {:.3e}".format(aluminium.rho("mm")))
+    print("Aluminium wave speed (m/s): {:.3e}".format(aluminium.wave_speed()))

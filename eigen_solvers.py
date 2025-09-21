@@ -22,7 +22,7 @@ def solve_scalar_eigen_problem_a(rho, V, a_mat, m_mat, rbm_gfs_ortho, num=10):
     return lams, gf
 
 
-def solve_scalar_eigen_problem_p(V, a_mat, m_mat, rbm_gfs_ortho, num=12):
+def solve_scalar_eigen_problem_p(rho, V, a_mat, m_mat, rbm_gfs_ortho, num=12):
     # PARDISO als inverser Operator
     inv = a_mat.Inverse(inverse="pardiso")  # <--- HIER
     evals, evecs = solvers.PINVIT(a_mat, m_mat, pre=inv, num=num, maxit=5)
