@@ -5,3 +5,4 @@
 *.vol
 data/rod_state.pvsm
 *.pdf
+*build*
