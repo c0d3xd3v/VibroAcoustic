@@ -3,6 +3,13 @@ project(FloatTetwildWrapper)
 
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
 
+if(WIN32)
+    #find_package(GMP REQUIRED)
+    include_directories(${GMP_INCLUDE_DIRS} ${GMP_INCLUDE_DIR})
+else()
+    set(GMP_LIBRARIES gmp)
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -55,6 +62,8 @@ add_library(${PROJECT_NAME} MODULE
 target_link_libraries(${PROJECT_NAME}
             PRIVATE
             Eigen3::Eigen
+            ${GMP_LIBRARY}
+            ${GMPXX_LIBRARY}
             FloatTetwild)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${ftetwild_BINARY_DIR}/include)
@@ -76,6 +85,8 @@ target_link_libraries(py${PROJECT_NAME}
             Eigen3::Eigen
             pybind11::module
             Python::Python
+            ${GMP_LIBRARY}
+            ${GMPXX_LIBRARY}
             FloatTetwild)
 
 target_include_directories(py${PROJECT_NAME} PRIVATE ${ftetwild_BINARY_DIR}/include)
